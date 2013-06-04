@@ -188,7 +188,7 @@ var select = function(doc) {
 
 //q = sjs.query('users', {'data.x':5}, true, function(err, data) { console.log(err, data); });
 //query = sjs.createSubscribeQuery('users', {$query:{"data.x":5}}, {autoFetch:true});
-query = sjs.createSubscribeQuery('$$COLLECTION', {$query:{}}, {autoFetch:true});
+query = sjs.createSubscribeQuery('$$COLLECTION', {}, {autoFetch:true});
 
 //query = sjs.createSubscribeQuery('players', {"$orderby":{"data.score":-1},"$limit":5}, {autoFetch:true});
 //query = sjs.createSubscribeQuery('users', {$query:{}}, {autoFetch:true, source:'clock'});
@@ -205,6 +205,12 @@ query.on('insert', onAdd = function(docs, idx) {
         var item = document.createElement('div');
         item.className = 'item';
         item.textContent = doc.name + " (" + doc.type.name + ")";
+        //select the top item (last in the list) if nothing is selected yet (first load)
+        if(!selected && i === docs.length-1) {
+          selected = item;
+          item.className = 'item selected';
+          select(doc);
+        }
         item.onclick = function(e) {
           if (selected) {
             selected.className = 'item';

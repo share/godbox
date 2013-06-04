@@ -12,7 +12,7 @@ coffee server.coffee
 # Usage
 
 If you have data in a mongo database called _sweetdb_ and a collection called _stories_ you can navigate to  
-http://localhost:7777/sweetdb/stories  
+[http://localhost:7777/sweetdb/stories](http://localhost:7777/sweetdb/stories)  
 
 to see the items and manipulate them.  
 

@@ -16,7 +16,7 @@ app.use express.static "#{__dirname}/node_modules/share/webclient"
 
 # Redis defaulting to database 1. Set using -r 0 or something.
 redisClient = redis.createClient()
-redisClient.select (argv.r or 1)
+redisClient.select (argv.r ? 1)
 
 shares = {}
 

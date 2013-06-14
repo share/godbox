@@ -49,8 +49,20 @@
     cursor: default;
   }
 
+  #list .item .delete {
+    position:relative;
+    top: 0;
+    right: 0;
+    display:block;
+    padding: 0px 5px;
+    border-radius: 10px;
+    font-family: Arial;
+    background-color: lightcoral;
+    float: right;
+  }
+
   #list .item.selected {
-    background-color: red !important;
+    background-color: lightcyan !important;
   }
   #list .item:hover {
     background-color: #ddd;
@@ -108,7 +120,7 @@
 </style>
 <div id='container'>
   <div id='left'>
-    <input id=q type=search results=5 placeholder="{'data.x': 5}" autofocus autosave='sharejsquery' incremental=true pattern='^[0-9]$' />
+    <input id=q type=search results=5 placeholder='{"data.x": 5}' autofocus autosave='sharejsquery' incremental=true pattern='^[0-9]$' />
     <div id='list'></div>
   </div>
   <div id='content'>
@@ -119,6 +131,7 @@
 <script src="/channel/bcsocket.js"></script>
 <script src="/text.js"></script>
 <script src="/json0.js"></script>
+<script src="/d3.min.js"></script>
 <script src="/share.uncompressed.js"></script>
 <script>
 
@@ -188,50 +201,59 @@ var select = function(doc) {
 
 //q = sjs.query('users', {'data.x':5}, true, function(err, data) { console.log(err, data); });
 //query = sjs.createSubscribeQuery('users', {$query:{"data.x":5}}, {autoFetch:true});
-query = sjs.createSubscribeQuery('$$COLLECTION', {$query:{}}, {autoFetch:true});
+query = sjs.createSubscribeQuery('$$COLLECTION', {}, {autoFetch:true});
 
 //query = sjs.createSubscribeQuery('players', {"$orderby":{"data.score":-1},"$limit":5}, {autoFetch:true});
 //query = sjs.createSubscribeQuery('users', {$query:{}}, {autoFetch:true, source:'clock'});
 
+var listSel = d3.select(listElem)
+  
 var selected;
 var onAdd;
-query.on('insert', onAdd = function(docs, idx) {
+var update;
+query.on('insert', update = function(docs, idx) {
   console.log('add', docs, idx);
 
-  for (var i = 0; i < docs.length; i++) {
-    (function() {
-      var doc = docs[i];
-      if (!doc.elem) {
-        var item = document.createElement('div');
-        item.className = 'item';
-        item.textContent = doc.name + " (" + doc.type.name + ")";
-        item.onclick = function(e) {
-          if (selected) {
-            selected.className = 'item';
-          }
-          selected = item;
-          item.className = 'item selected';
+  var sel = listSel.selectAll("div.item")
+  .data(docs, function (d) { return d.name })
+  
+  var listEnter = sel
+    .enter()
+    .append("div")
+    .classed("item", true)
 
-          select(doc);
-        };
-        item.onmousedown = function() { return false; };
+    listEnter.append("span").classed("name", true).each(function(d) {
+      d.elem = this;
+    })
 
-        doc.elem = item;
-      }
+  sel.select(".name")
+    .text(function(d) { return d.name + " (" + d.type.name + ")" })
+  
+  sel
+    .on("click", function(d,i) {
+      listSel.selectAll(".item")
+      .classed("selected", false);
+      d3.select(this).classed("selected", true);
+      select(d);
+    })
 
-      listElem.insertBefore(doc.elem, listElem.children[idx]);
-    })();
-//  listElem.appendChild(doc.elem);
-  }
+  listEnter.append("span")
+  .text('x')
+  .classed("delete", true)
+  
+  sel.select(".delete")
+    .on("click", function(d,i) {
+      d.del();
+    })
 });
 
-query.on('remove', function(docs, idx) {
-  for (var i = 0; i < docs.length; i++) {
-    var doc = docs[i];
-    console.log('removed', doc);
-    listElem.removeChild(doc.elem);
-  }
-});
+query.on('remove', function(docs) {
+  var sel = listSel.selectAll("div.item")
+  .data(docs, function (d) { return d.name })
+ 
+  sel.remove();
+})
+
 
 query.on('move', function(docs, from, to) {
   for (var i = 0; i < docs.length; i++) {
@@ -242,10 +264,8 @@ query.on('move', function(docs, from, to) {
 });
 
 query.on('change', function() {
-  while(listElem.firstChild) {
-    listElem.removeChild(listElem.firstChild);
-  }
-  onAdd(query.results, 0);
+  listSel.selectAll(".item").remove()
+  update(query.results, 0);
 });
 
 //query.subscribe();

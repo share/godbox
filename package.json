@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "coffee-script":"*",
     "browserchannel": "~1.0.4",
     "express": "~3.2.6",
     "livedb": "~0.1",

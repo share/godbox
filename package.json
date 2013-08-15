@@ -7,8 +7,8 @@
     "coffee-script":"*",
     "browserchannel": "~1.0.4",
     "express": "~3.2.6",
-    "livedb": "~0.1",
-    "livedb-mongo": "~0.1",
+    "livedb": "~0.2",
+    "livedb-mongo": "~0.2",
     "optimist": "~0.5.2",
     "redis": "~0.8.3",
     "share": "~0.7"

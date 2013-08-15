@@ -15,15 +15,20 @@ app.use express.static "#{__dirname}/public"
 app.use express.static "#{__dirname}/node_modules/share/webclient"
 
 # Redis defaulting to database 1. Set using -r 0 or something.
-redisClient = redis.createClient()
-redisClient.select (argv.r ? 1)
+createRedis = ->
+  client = redis.createClient()
+  client.select (argv.r ? 1)
+  client
 
 shares = {}
 
 getShare = (dbName) ->
   console.log dbName
   if !shares[dbName]
-    backend = livedb.client livedbMongo("localhost:27017/#{dbName}?auto_reconnect", safe:false), redisClient, {}
+    backend = livedb.client
+      db: livedbMongo("localhost:27017/#{dbName}?auto_reconnect", safe:false)
+      redis: createRedis()
+      redisObserver: createRedis()
     shares[dbName] = sharejs.server.createClient {backend}
 
   shares[dbName]

@@ -69,9 +69,12 @@ app.use browserChannel (client, req) ->
   # ... and give the stream to ShareJS.
 
 app.use app.router
+app.get '/', (req, res, next) ->
+  res.end 'Go to /my_mongo_db/collection'
+
 app.get '/:db/:collection', (req, res, next) ->
   console.log req.path
-  source = fs.readFileSync('public/index.html', 'utf8')
+  source = fs.readFileSync('public/index.html.template', 'utf8')
     .replace(/\$\$DB/g, req.params.db)
     .replace(/\$\$COLLECTION/g, req.params.collection)
 
